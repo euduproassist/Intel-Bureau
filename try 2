@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Intel Bureau - Classified Intelligence Engine</title>
+    <style>
+        :root {
+            --bg-primary: #050b14;
+            --bg-secondary: #0a1424;
+            --panel-bg: rgba(10, 20, 36, 0.75);
+            --panel-border: rgba(41, 79, 128, 0.3);
+            --panel-border-glow: rgba(56, 189, 248, 0.4);
+            --text-main: #f0f6fc;
+            --text-muted: #8b949e;
+            --accent-blue: #38bdf8;
+            --accent-blue-hover: #0ea5e9;
+            --accent-dim: rgba(56, 189, 248, 0.1);
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --transition-speed: 250ms;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-primary);
+            font-family: var(--font-family);
+            color: var(--text-main);
+        }
+
+        #landscape-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--bg-primary);
+            background-image: radial-gradient(circle at 50% 30%, #0c1c38 0%, #050b14 80%);
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            transform-origin: center center;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Top Header */
+        header.bureau-header {
+            height: 60px;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--panel-border);
+            background: rgba(5, 11, 20, 0.85);
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .header-title-group h1 {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+        }
+
+        .header-title-group span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .header-meta {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .board-counter {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            background: var(--accent-dim);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        .toolbox-toggle-btn {
+            background: transparent;
+            border: 1px solid var(--panel-border);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+
+        .toolbox-toggle-btn:hover {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        /* Main Game Viewport */
+        .game-viewport {
+            flex: 1;
+            position: relative;
+            padding: 16px 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .board-container {
+            width: 100%;
+            height: 100%;
+            max-width: 1100px;
+            max-height: calc(100vh - 140px);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            position: relative;
+            overflow-y: auto;
+            opacity: 1;
+            transition: opacity var(--transition-speed), transform var(--transition-speed);
+        }
+
+        .board-container.fade-out {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        .board-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        .board-container::-webkit-scrollbar-thumb {
+            background: var(--panel-border);
+            border-radius: 2px;
+        }
+
+        /* Typography & Content Layout inside Boards */
+        .board-heading {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
+        }
+
+        .board-subheading {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .board-body-text {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-main);
+            margin-bottom: 16px;
+        }
+
+        /* Bottom Navigation Bar */
+        footer.bureau-footer {
+            height: 64px;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--panel-border);
+            background: rgba(5, 11, 20, 0.85);
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .bureau-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--panel-border);
+            color: var(--text-main);
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .bureau-btn:hover:not(:disabled) {
+            background: var(--accent-dim);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            transform: translateY(-1px);
+        }
+
+        .bureau-btn:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        .bureau-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: var(--panel-border);
+        }
+
+        .bureau-btn.primary {
+            background: var(--accent-blue);
+            color: #050b14;
+            border-color: var(--accent-blue);
+        }
+
+        .bureau-btn.primary:hover:not(:disabled) {
+            background: var(--accent-blue-hover);
+            color: #050b14;
+        }
+
+        /* Validation Feedback Message Box */
+        .validation-feedback {
+            margin-top: 16px;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: none;
+            animation: fadeIn 0.2s ease forwards;
+        }
+
+        .validation-feedback.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .validation-feedback.success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Evidence Cards Grid */
+        .evidence-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+            overflow-y: auto;
+            max-height: 60vh;
+            padding-right: 4px;
+        }
+
+        .evidence-card {
+            background: rgba(15, 25, 45, 0.6);
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .evidence-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.1);
+        }
+
+        .evidence-card.bookmarked {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+        }
+
+        .evidence-card.unread::after {
+            content: '';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+        }
+
+        .evidence-card-category {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-blue);
+            font-weight: 700;
+        }
+
+        .evidence-card-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* Evidence Viewer Modal Overlay */
+        .evidence-viewer-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 11, 20, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition-speed);
+        }
+
+        .evidence-viewer-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .evidence-viewer-modal {
+            width: 90%;
+            max-width: 700px;
+            max-height: 85vh;
+            background: var(--bg-secondary);
+            border: 1px solid var(--panel-border-glow);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            transform: scale(0.95);
+            transition: transform var(--transition-speed);
+        }
+
+        .evidence-viewer-overlay.active .evidence-viewer-modal {
+            transform: scale(1);
+        }
+
+        .viewer-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 20, 36, 0.95);
+        }
+
+        .viewer-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .viewer-footer {
+            padding: 12px 20px;
+            border-top: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: rgba(10, 20, 36, 0.95);
+        }
+
+        /* Toolbox Side Panel */
+        .toolbox-panel {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            width: 320px;
+            height: calc(100vh - 124px);
+            background: rgba(8, 16, 28, 0.95);
+            backdrop-filter: blur(16px);
+            border-left: 1px solid var(--panel-border);
+            z-index: 50;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .toolbox-panel.active {
+            transform: translateX(0);
+        }
+
+        .toolbox-section h3 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-blue);
+            margin-bottom: 8px;
+        }
+
+        .toolbox-notes-area {
+            width: 100%;
+            height: 150px;
+            background: rgba(5, 11, 20, 0.6);
+            border: 1px solid var(--panel-border);
+            border-radius: 4px;
+            color: var(--text-main);
+            padding: 10px;
+            font-family: var(--font-family);
+            font-size: 0.85rem;
+            resize: none;
+            outline: none;
+        }
+
+        .toolbox-notes-area:focus {
+            border-color: var(--accent-blue);
+        }
+
+        /* Timeline & List Styles */
+        .timeline-list, .suspect-list, .match-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .timeline-item, .suspect-card {
+            background: rgba(15, 25, 45, 0.6);
+            border: 1px solid var(--panel-border);
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .suspect-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        /* Form Controls */
+        .bureau-select, .bureau-input {
+            width: 100%;
+            background: rgba(15, 25, 45, 0.8);
+            border: 1px solid var(--panel-border);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            margin-top: 8px;
+            margin-bottom: 16px;
+            transition: border-color var(--transition-speed);
+        }
+
+        .bureau-select:focus, .bureau-input:focus {
+            border-color: var(--accent-blue);
+        }
+
+        /* Tables */
+        .bureau-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.85rem;
+        }
+
+        .bureau-table th, .bureau-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        .bureau-table th {
+            color: var(--accent-blue);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        /* Responsive Layout Adjustments */
+        @media (max-width: 768px) {
+            header.bureau-header, footer.bureau-footer {
+                padding: 0 16px;
+                height: 52px;
+            }
+            .game-viewport {
+                padding: 12px 16px;
+            }
+            .board-container {
+                padding: 16px;
+                max-height: calc(100vh - 104px);
+            }
+            .board-heading {
+                font-size: 1.25rem;
+            }
+            .evidence-grid {
+                grid-template-columns: 1fr;
+            }
+            .toolbox-panel {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="landscape-wrapper">
+        <header class="bureau-header">
+            <div class="header-title-group">
+                <h1 id="mission-title-header">INTEL BUREAU</h1>
+                <span id="case-subtitle-header">CASE 001: THE MISSING MUSEUM ARTIFACT</span>
+            </div>
+            <div class="header-meta">
+                <div class="board-counter" id="board-counter-display">Board 1 / 12</div>
+                <button class="toolbox-toggle-btn" id="toggle-toolbox-btn">Toolbox</button>
+            </div>
+        </header>
+
+        <main class="game-viewport">
+            <div class="glass-panel board-container" id="board-render-container">
+                <!-- Dynamic Board Content injects here -->
+            </div>
+        </main>
+
+        <footer class="bureau-footer">
+            <button class="bureau-btn" id="prev-btn" onclick="previousBoard()">Previous</button>
+            <button class="bureau-btn primary" id="next-btn" onclick="nextBoard()">Next</button>
+        </footer>
+
+        <!-- Toolbox Sidebar Panel -->
+        <div class="toolbox-panel" id="toolbox-panel">
+            <div class="toolbox-section">
+                <h3>Analyst Statistics</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Evidence Read: <span id="stat-read-count">0</span> / <span id="stat-total-evidence">6</span></p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 2px;">Bookmarks Active: <span id="stat-bookmark-count">0</span></p>
+            </div>
+            <div class="toolbox-section" style="flex: 1; display: flex; flex-direction: column;">
+                <h3>Investigation Notes</h3>
+                <textarea class="toolbox-notes-area" id="analyst-notes-input" placeholder="Record confidential deductions here..."></textarea>
+            </div>
+            <button class="bureau-btn" onclick="toggleToolbox()" style="width: 100%; justify-content: center;">Close Toolbox</button>
+        </div>
+
+        <!-- Evidence Viewer Modal -->
+        <div class="evidence-viewer-overlay" id="evidence-viewer-overlay" onclick="closeEvidenceViewer(event)">
+            <div class="evidence-viewer-modal" onclick="event.stopPropagation()">
+                <div class="viewer-header">
+                    <div>
+                        <span class="evidence-card-category" id="viewer-modal-category">CATEGORY</span>
+                        <h2 style="font-size: 1.1rem; font-weight: 600; margin-top: 2px;" id="viewer-modal-title">Evidence Title</h2>
+                    </div>
+                    <button class="bureau-btn" style="padding: 6px 12px; font-size: 0.75rem;" onclick="closeEvidenceViewer()">Close</button>
+                </div>
+                <div class="viewer-body" id="viewer-modal-content">
+                    <!-- Dynamic Evidence Content -->
+                </div>
+                <div class="viewer-footer">
+                    <button class="bureau-btn" id="viewer-bookmark-btn" onclick="toggleBookmarkCurrentEvidence()">Bookmark Evidence</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Force Landscape / Window Scale Alignment for Mobile
+        function forceLandscape() {
+            const wrapper = document.getElementById('landscape-wrapper');
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+
+            if (windowWidth < windowHeight) {
+                wrapper.style.width = windowHeight + 'px';
+                wrapper.style.height = windowWidth + 'px';
+                wrapper.style.transform = `translate(-50%, -50%) rotate(90deg)`;
+                wrapper.style.position = 'absolute';
+                wrapper.style.top = '50%';
+                wrapper.style.left = '50%';
+            } else {
+                wrapper.style.width = '100vw';
+                wrapper.style.height = '100vh';
+                wrapper.style.transform = `translate(-50%, -50%) rotate(0deg)`;
+                wrapper.style.position = 'absolute';
+                wrapper.style.top = '0';
+                wrapper.style.left = '0';
+            }
+        }
+
+        window.addEventListener('load', forceLandscape);
+        window.addEventListener('resize', forceLandscape);
+
+        // Core Application State & Storage
+        let currentBoardIndex = 0;
+        let caseData = null;
+        let gameState = {
+            readEvidenceIds: [],
+            bookmarkedEvidenceIds: [],
+            notes: '',
+            boardValidationStatus: {}
+        };
+
+        // Complete Case 001 Definition (12 Professional Intelligence Boards)
+        const case001Definition = {
+            id: "CASE-001",
+            title: "The Missing Museum Artifact",
+            boards: [
+                {
+                    id: 1,
+                    type: "information",
+                    title: "CLASSIFIED",
+                    subtitle: "CASE 001 - The Missing Museum Artifact",
+                    content: `Yesterday evening, a priceless diamond disappeared from Riverside Museum. The Investigation Unit has already collected evidence. Your responsibility is to determine what the available evidence proves.<br><br><strong>Remember:</strong> You are not investigating. You are analyzing.`
+                },
+                {
+                    id: 2,
+                    type: "information",
+                    title: "MISSION BRIEF",
+                    subtitle: "Operational Parameters & Objectives",
+                    content: `<strong>Location:</strong> Riverside Museum<br><strong>Crime:</strong> Artifact Missing<br><strong>Victim:</strong> Museum Institution<br><br><strong>Primary Objective:</strong> Determine the most logical suspect.<br><strong>Secondary Objective:</strong> Support your conclusion using empirical evidence.`
+                },
+                {
+                    id: 3,
+                    type: "timeline",
+                    title: "INCIDENT TIMELINE",
+                    subtitle: "Recorded Chronology of Events",
+                    events: [
+                        { time: "18:00", description: "Museum opens to public visitors." },
+                        { time: "19:45", description: "Delivery truck arrives at loading bay." },
+                        { time: "20:05", description: "Guard begins routine perimeter inspection." },
+                        { time: "20:10", description: "Storage room digital alarm disabled." },
+                        { time: "20:11", description: "Storage room physical door accessed." },
+                        { time: "20:14", description: "Unknown individual enters eastern hallway." },
+                        { time: "20:18", description: "Artifact confirmed missing from display vault." },
+                        { time: "20:23", description: "White sedan leaves perimeter parking area." },
+                        { time: "20:25", description: "Automatic silent alarm triggered." }
+                    ]
+                },
+                {
+                    id: 4,
+                    type: "question",
+                    title: "CCTV REPORT",
+                    subtitle: "Surveillance Camera Analysis",
+                    content: `<strong>CAMERA 1 (20:14):</strong> Blue jacket enters eastern hallway.<br><strong>CAMERA 2 (20:18):</strong> Blue jacket exits storage room.<br><strong>CAMERA 3 (20:23):</strong> White sedan exits parking lot.`,
+                    questionText: "Which camera recorded the suspect closest to the disappearance?",
+                    options: ["Camera 1", "Camera 2", "Camera 3"],
+                    correctAnswer: "Camera 2"
+                },
+                {
+                    id: 5,
+                    type: "information",
+                    title: "WITNESS STATEMENTS",
+                    subtitle: "Collector & Staff Interviews",
+                    content: `<strong>Witness 1 (Museum Cleaner):</strong> "I saw the guard near the storage room around 20:05."<br><br><strong>Witness 2 (Receptionist):</strong> "The delivery driver left before 19:30."<br><br><strong>Witness 3 (Visitor):</strong> "I heard the alarm before I saw anyone leave."<br><br><em>Note: Statements must be cross-referenced against telemetry logs.</em>`
+                },
+                {
+                    id: 6,
+                    type: "question",
+                    title: "ACCESS LOG",
+                    subtitle: "Secure Electronic Entry Records",
+                    content: `<strong>Storage Room:</strong> 20:11 (Guard Card)<br><strong>Storage Room:</strong> 19:43 (Curator Card)<br><strong>Front Door:</strong> 19:47 (Delivery Driver Temporary Pass)`,
+                    questionText: "Who was the last authorised person to access the Storage Room?",
+                    options: ["Guard", "Curator", "Delivery Driver"],
+                    correctAnswer: "Guard"
+                },
+                {
+                    id: 7,
+                    type: "question",
+                    title: "PHONE GPS TELEMETRY",
+                    subtitle: "Cellular Location Ping Analysis",
+                    content: `<strong>Guard Phone:</strong> Riverside Museum (20:11)<br><strong>Delivery Driver Phone:</strong> Logistics Warehouse (20:11)<br><strong>Curator Phone:</strong> City Centre Restaurant (20:11)`,
+                    questionText: "Which suspect definitely was NOT at the museum during the incident?",
+                    options: ["Guard", "Delivery Driver", "Curator"],
+                    correctAnswer: "Curator"
+                },
+                {
+                    id: 8,
+                    type: "suspects",
+                    title: "SUSPECT PROFILES",
+                    subtitle: "Primary Dossiers",
+                    suspects: [
+                        { name: "Michael Dube", role: "Security Guard", info: "7 years service. Full restricted access. Worked during incident. Reported financial pressure." },
+                        { name: "Sarah Jacobs", role: "Senior Curator", info: "11 years service. Inventory responsibility. Left at 18:30. GPS confirmed at restaurant." },
+                        { name: "Brian Molefe", role: "Delivery Driver", info: "Courier service. Temporary visitor pass. Left prior to incident per reception." }
+                    ]
+                },
+                {
+                    id: 9,
+                    type: "evidence_viewer",
+                    title: "EVIDENCE REPOSITORY",
+                    subtitle: "Review & Inspect Case Evidence",
+                    evidenceList: [
+                        { id: "e1", category: "Access Log", title: "Storage Room Access Card", description: "Digital access log confirming Guard card swiped at 20:11 into secure storage." },
+                        { id: "e2", category: "GPS", title: "Museum GPS Telemetry", description: "Cellular tower ping placing Guard inside museum perimeter continuously." },
+                        { id: "e3", category: "GPS", title: "Restaurant GPS Telemetry", description: "Verified location data confirming Curator at downtown restaurant during incident." },
+                        { id: "e4", category: "Access Log", title: "Temporary Visitor Pass", description: "Issued to delivery driver; logged exiting premises prior to 19:30." },
+                        { id: "e5", category: "Witness", title: "Witness Statement (Cleaner)", description: "Observed guard near restricted sector at 20:05." },
+                        { id: "e6", category: "CCTV", title: "CCTV Camera 2 Footage", description: "Visual record of blue jacket individual exiting storage room at 20:18." }
+                    ]
+                },
+                {
+                    id: 10,
+                    type: "hypothesis",
+                    title: "BUILD FINAL HYPOTHESIS",
+                    subtitle: "Synthesize Investigative Conclusions",
+                    questions: [
+                        { label: "Who committed the theft?", key: "who", options: ["Guard", "Curator", "Delivery Driver"], correct: "Guard" },
+                        { label: "What was the primary motive?", key: "why", options: ["Financial Motive", "Accidental Damage", "Personal Revenge", "Unknown"], correct: "Financial Motive" },
+                        { label: "Strongest supporting evidence?", key: "evidence", options: ["GPS", "Witness", "Storage Access", "CCTV", "Timeline"], correct: "Storage Access" }
+                    ]
+                },
+                {
+                    id: 11,
+                    type: "report",
+                    title: "FINAL INTELLIGENCE REPORT",
+                    subtitle: "Official Bureau Assessment Submission",
+                    sentences: [
+                        { label: "Based on available evidence...", key: "s1", options: ["The Guard", "The Curator", "The Delivery Driver"], correct: "The Guard" },
+                        { label: "The strongest supporting evidence was...", key: "s2", options: ["Storage Access", "GPS", "Witness", "Timeline", "CCTV"], correct: "Storage Access" },
+                        { label: "Recommendation...", key: "s3", options: ["Further Investigation Required", "Immediate Arrest", "Close Case", "Collect Additional Evidence"], correct: "Further Investigation Required" }
+                    ]
+                },
+                {
+                    id: 12,
+                    type: "success",
+                    title: "CASE ACCOMPLISHED",
+                    subtitle: "Final Intelligence Review & Debrief",
+                    summary: "• The Guard was the only suspect confirmed inside the restricted storage room.<br>• CCTV supports the Guard's movement near the time of disappearance.<br>• GPS confirms the Guard remained inside the museum.<br>• The Curator was ruled out because restaurant GPS confirmed her location.<br>• The Delivery Driver was ruled out because he had already left before the incident.<br>• Although suspicion is high, investigators still require direct physical evidence before formal prosecution."
+                }
+            ]
+        };
+
+        // Initialize Engine
+        function initEngine() {
+            caseData = case001Definition;
+            loadSavedState();
+            renderCurrentBoard();
+            updateToolboxUI();
+        }
+
+        // Save & Load State Storage
+        function saveState() {
+            try {
+                localStorage.setItem('intel_bureau_state', JSON.stringify(gameState));
+                localStorage.setItem('intel_bureau_board', currentBoardIndex);
+            } catch (e) {
+                console.error('Storage error:', e);
+            }
+        }
+
+        function loadSavedState() {
+            try {
+                const savedState = localStorage.getItem('intel_bureau_state');
+                if (savedState) {
+                    gameState = JSON.parse(savedState);
+                }
+                const savedBoard = localStorage.getItem('intel_bureau_board');
+                if (savedBoard !== null) {
+                    currentBoardIndex = parseInt(savedBoard, 10);
+                }
+            } catch (e) {
+                console.error('Error loading state:', e);
+            }
+        }
+
+        // Navigation Controller
+        function loadBoard(index) {
+            if (index < 0 || index >= caseData.boards.length) return;
+            
+            const container = document.getElementById('board-render-container');
+            container.classList.add('fade-out');
+
+            setTimeout(() => {
+                currentBoardIndex = index;
+                renderCurrentBoard();
+                container.classList.remove('fade-out');
+                saveState();
+            }, 250);
+        }
+
+        function nextBoard() {
+            if (currentBoardIndex < caseData.boards.length - 1) {
+                loadBoard(currentBoardIndex + 1);
+            }
+        }
+
+        function previousBoard() {
+            if (currentBoardIndex > 0) {
+                loadBoard(currentBoardIndex - 1);
+            }
+        }
+
+        // Render Dispatcher
+        function renderCurrentBoard() {
+            const board = caseData.boards[currentBoardIndex];
+            const container = document.getElementById('board-render-container');
+            const counter = document.getElementById('board-counter-display');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+
+            counter.innerText = `Board ${currentBoardIndex + 1} / ${caseData.boards.length}`;
+            prevBtn.disabled = (currentBoardIndex === 0);
+            
+            if (currentBoardIndex === caseData.boards.length - 1) {
+                nextBtn.innerText = "Return to Office";
+                nextBtn.onclick = returnToOffice;
+                nextBtn.disabled = false;
+            } else {
+                nextBtn.innerText = "Next";
+                nextBtn.onclick = nextBoard;
+                // Check if current board requires validation
+                if (board.type === 'question' || board.type === 'hypothesis' || board.type === 'report') {
+                    nextBtn.disabled = !gameState.boardValidationStatus[board.id];
+                } else {
+                    nextBtn.disabled = false;
+                }
+            }
+
+            container.innerHTML = '';
+
+            // Header elements
+            const heading = document.createElement('h2');
+            heading.className = 'board-heading';
+            heading.innerText = board.title;
+            container.appendChild(heading);
+
+            if (board.subtitle) {
+                const subheading = document.createElement('p');
+                subheading.className = 'board-subheading';
+                subheading.innerText = board.subtitle;
+                container.appendChild(subheading);
+            }
+
+            // Type Specific Renderers
+            switch (board.type) {
+                case 'information':
+                    renderInformation(board, container);
+                    break;
+                case 'timeline':
+                    renderTimeline(board, container);
+                    break;
+                case 'question':
+                    renderQuestion(board, container);
+                    break;
+                case 'suspects':
+                    renderSuspects(board, container);
+                    break;
+                case 'evidence_viewer':
+                    renderEvidence(board, container);
+                    break;
+                case 'hypothesis':
+                    renderHypothesis(board, container);
+                    break;
+                case 'report':
+                    renderReport(board, container);
+                    break;
+                case 'success':
+                    renderSuccess(board, container);
+                    break;
+                default:
+                    renderInformation(board, container);
+            }
+        }
+
+        // Component Renderers
+        function renderInformation(board, container) {
+            const body = document.createElement('div');
+            body.className = 'board-body-text';
+            body.innerHTML = board.content;
+            container.appendChild(body);
+        }
+
+        function renderTimeline(board, container) {
+            const list = document.createElement('div');
+            list.className = 'timeline-list';
+            board.events.forEach(ev => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+                item.innerHTML = `<strong>${ev.time}</strong> <span>${ev.description}</span>`;
+                list.appendChild(item);
+            });
+            container.appendChild(list);
+        }
+
+        function renderQuestion(board, container) {
+            const body = document.createElement('div');
+            body.className = 'board-body-text';
+            body.innerHTML = board.content;
+            container.appendChild(body);
+
+            const qText = document.createElement('p');
+            qText.style.fontWeight = '600';
+            qText.style.margin = '16px 0 8px 0';
+            qText.innerText = board.questionText;
+            container.appendChild(qText);
+
+            const select = document.createElement('select');
+            select.className = 'bureau-select';
+            select.innerHTML = '<option value="">-- Select Assessment --</option>' + 
+                board.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+            
+            if (gameState.boardValidationStatus[board.id]) {
+                select.value = board.correctAnswer;
+                select.disabled = true;
+            }
+
+            select.onchange = (e) => validateQuestionAnswer(board, e.target.value);
+            container.appendChild(select);
+
+            const feedback = document.createElement('div');
+            feedback.id = `feedback-${board.id}`;
+            feedback.className = 'validation-feedback';
+            if (gameState.boardValidationStatus[board.id]) {
+                feedback.className = 'validation-feedback success';
+                feedback.innerText = 'Analysis Accepted.';
+                feedback.style.display = 'block';
+            }
+            container.appendChild(feedback);
+        }
+
+        function validateQuestionAnswer(board, answer) {
+            const feedback = document.getElementById(`feedback-${board.id}`);
+            const nextBtn = document.getElementById('next-btn');
+
+            if (answer === board.correctAnswer) {
+                feedback.className = 'validation-feedback success';
+                feedback.innerText = 'Analysis Accepted.';
+                feedback.style.display = 'block';
+                gameState.boardValidationStatus[board.id] = true;
+                nextBtn.disabled = false;
+                saveState();
+            } else if (answer !== "") {
+                feedback.className = 'validation-feedback error';
+                feedback.innerText = 'Incorrect Analysis. Review the available evidence.';
+                feedback.style.display = 'block';
+                gameState.boardValidationStatus[board.id] = false;
+                nextBtn.disabled = true;
+                saveState();
+            } else {
+                feedback.style.display = 'none';
+            }
+        }
+
+        function renderSuspects(board, container) {
+            const list = document.createElement('div');
+            list.className = 'suspect-list';
+            board.suspects.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'suspect-card glass-panel';
+                card.style.padding = '14px';
+                card.innerHTML = `<strong style="color:var(--accent-blue);">${s.name} (${s.role})</strong><span style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">${s.info}</span>`;
+                list.appendChild(card);
+            });
+            container.appendChild(list);
+        }
+
+        function renderEvidence(board, container) {
+            const grid = document.createElement('div');
+            grid.className = 'evidence-grid';
+
+            board.evidenceList.forEach(item => {
+                const isRead = gameState.readEvidenceIds.includes(item.id);
+                const isBookmarked = gameState.bookmarkedEvidenceIds.includes(item.id);
+
+                const card = document.createElement('div');
+                card.className = `evidence-card ${isBookmarked ? 'bookmarked' : ''} ${!isRead ? 'unread' : ''}`;
+                card.onclick = () => openEvidenceViewer(item);
+
+                card.innerHTML = `
+                    <span class="evidence-card-category">${item.category}</span>
+                    <span class="evidence-card-title">${item.title}</span>
+                `;
+                grid.appendChild(card);
+            });
+            container.appendChild(grid);
+            updateToolboxUI();
+        }
+
+        // Evidence Viewer Modal Functions
+        let activeEvidenceItem = null;
+        function openEvidenceViewer(item) {
+            activeEvidenceItem = item;
+            if (!gameState.readEvidenceIds.includes(item.id)) {
+                gameState.readEvidenceIds.push(item.id);
+                saveState();
+                updateToolboxUI();
+                // Refresh grid indicator if on board 9
+                if (currentBoardIndex === 8) renderCurrentBoard();
+            }
+
+            document.getElementById('viewer-modal-category').innerText = item.category;
+            document.getElementById('viewer-modal-title').innerText = item.title;
+            document.getElementById('viewer-modal-content').innerHTML = `<p>${item.description}</p>`;
+            
+            const bmBtn = document.getElementById('viewer-bookmark-btn');
+            bmBtn.innerText = gameState.bookmarkedEvidenceIds.includes(item.id) ? 'Remove Bookmark' : 'Bookmark Evidence';
+
+            document.getElementById('evidence-viewer-overlay').classList.add('active');
+        }
+
+        function closeEvidenceViewer(e) {
+            if (!e || e.target.id === 'evidence-viewer-overlay' || e.target.tagName === 'BUTTON') {
+                document.getElementById('evidence-viewer-overlay').classList.remove('active');
+                activeEvidenceItem = null;
+            }
+        }
+
+        function toggleBookmarkCurrentEvidence() {
+            if (!activeEvidenceItem) return;
+            const idx = gameState.bookmarkedEvidenceIds.indexOf(activeEvidenceItem.id);
+            if (idx > -1) {
+                gameState.bookmarkedEvidenceIds.splice(idx, 1);
+            } else {
+                gameState.bookmarkedEvidenceIds.push(activeEvidenceItem.id);
+            }
+            saveState();
+            updateToolboxUI();
+            openEvidenceViewer(activeEvidenceItem);
+            if (currentBoardIndex === 8) renderCurrentBoard();
+        }
+
+        function renderHypothesis(board, container) {
+            const form = document.createElement('div');
+            form.style.display = 'flex';
+            form.style.flexDirection = 'column';
+            form.style.gap = '12px';
+
+            board.questions.forEach(q => {
+                const label = document.createElement('label');
+                label.style.fontSize = '0.85rem';
+                label.style.fontWeight = '600';
+                label.innerText = q.label;
+
+                const select = document.createElement('select');
+                select.className = 'bureau-select';
+                select.id = `hyp-${q.key}`;
+                select.innerHTML = '<option value="">-- Select --</option>' + q.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                select.onchange = validateHypothesis;
+
+                if (gameState.hypothesisAnswers && gameState.hypothesisAnswers[q.key]) {
+                    select.value = gameState.hypothesisAnswers[q.key];
+                }
+
+                form.appendChild(label);
+                form.appendChild(select);
+            });
+
+            container.appendChild(form);
+
+            const feedback = document.createElement('div');
+            feedback.id = 'hypothesis-feedback';
+            feedback.className = 'validation-feedback';
+            if (gameState.boardValidationStatus[board.id]) {
+                feedback.className = 'validation-feedback success';
+                feedback.innerText = 'Analysis Accepted.';
+                feedback.style.display = 'block';
+            }
+            container.appendChild(feedback);
+        }
+
+        function validateHypothesis() {
+            const board = caseData.boards[currentBoardIndex];
+            const answers = {};
+            let allAnswered = true;
+
+            board.questions.forEach(q => {
+                const val = document.getElementById(`hyp-${q.key}`).value;
+                answers[q.key] = val;
+                if (!val) allAnswered = false;
+            });
+
+            gameState.hypothesisAnswers = answers;
+            const feedback = document.getElementById('hypothesis-feedback');
+            const nextBtn = document.getElementById('next-btn');
+
+            if (!allAnswered) {
+                feedback.style.display = 'none';
+                return;
+            }
+
+            let correct = true;
+            board.questions.forEach(q => {
+                if (answers[q.key] !== q.correct) correct = false;
+            });
+
+            if (correct) {
+                feedback.className = 'validation-feedback success';
+                feedback.innerText = 'Analysis Accepted.';
+                feedback.style.display = 'block';
+                gameState.boardValidationStatus[board.id] = true;
+                nextBtn.disabled = false;
+            } else {
+                feedback.className = 'validation-feedback error';
+                feedback.innerText = 'The evidence does not fully support this conclusion.';
+                feedback.style.display = 'block';
+                gameState.boardValidationStatus[board.id] = false;
+                nextBtn.disabled = true;
+            }
+            saveState();
+        }
+
+        function renderReport(board, container) {
+            const form = document.createElement('div');
+            form.style.display = 'flex';
+            form.style.flexDirection = 'column';
+            form.style.gap = '12px';
+
+            board.sentences.forEach(s => {
+                const label = document.createElement('label');
+                label.style.fontSize = '0.85rem';
+                label.style.fontWeight = '600';
+                label.innerText = s.label;
+
+                const select = document.createElement('select');
+                select.className = 'bureau-select';
+                select.id = `rep-${s.key}`;
+                select.innerHTML = '<option value="">-- Select Assessment --</option>' + s.options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                select.onchange = validateReport;
+
+                if (gameState.reportAnswers && gameState.reportAnswers[s.key]) {
+                    select.value = gameState.reportAnswers[s.key];
+                }
+
+                form.appendChild(label);
+                form.appendChild(select);
+            });
+
+            container.appendChild(form);
+
+            const feedback = document.createElement('div');
+            feedback.id = 'report-feedback';
+            feedback.className = 'validation-feedback';
+            if (gameState.boardValidationStatus[board.id]) {
+                feedback.className = 'validation-feedback success';
+                feedback.innerText = 'REPORT ACCEPTED';
+                feedback.style.display = 'block';
+            }
+            container.appendChild(feedback);
+        }
+
+        function validateReport() {
+            const board = caseData.boards[currentBoardIndex];
+            const answers = {};
+            let allAnswered = true;
+
+            board.sentences.forEach(s => {
+                const val = document.getElementById(`rep-${s.key}`).value;
+                answers[s.key] = val;
+                if (!val) allAnswered = false;
+            });
+
+            gameState.reportAnswers = answers;
+            const feedback = document.getElementById('report-feedback');
+            const nextBtn = document.getElementById('next-btn');
+
+            if (!allAnswered) {
+                feedback.style.display = 'none';
+                return;
+            }
+
+            let correct = true;
+            board.sentences.forEach(s => {
+                if (answers[s.key] !== s.correct) correct = false;
+            });
+
+            if (correct) {
+                feedback.className = 'validation-feedback success';
+                feedback.innerText = 'REPORT ACCEPTED';
+                feedback.style.display = 'block';
+                gameState.boardValidationStatus[board.id] = true;
+                nextBtn.disabled = false;
+            } else {
+                feedback.className = 'validation-feedback error';
+                feedback.innerText = 'The evidence does not sufficiently support your report.';
+                feedback.style.display = 'block';
+                gameState.boardValidationStatus[board.id] = false;
+                nextBtn.disabled = true;
+            }
+            saveState();
+        }
+
+        function renderSuccess(board, container) {
+            const body = document.createElement('div');
+            body.className = 'board-body-text';
+            body.innerHTML = `<strong>EXCELLENT ANALYTICAL REASONING</strong><br>You successfully identified the most logical suspect using available intelligence.<br><br><strong>CASE SUMMARY:</strong><br>${board.summary}`;
+            container.appendChild(body);
+        }
+
+        function returnToOffice() {
+            localStorage.removeItem('intel_bureau_board');
+            localStorage.removeItem('intel_bureau_state');
+            alert('Case archived successfully. Returning to Bureau Office dashboard.');
+            currentBoardIndex = 0;
+            gameState = { readEvidenceIds: [], bookmarkedEvidenceIds: [], notes: '', boardValidationStatus: {} };
+            initEngine();
+        }
+
+        // Toolbox Controller
+        const toggleBtn = document.getElementById('toggle-toolbox-btn');
+        const toolboxPanel = document.getElementById('toolbox-panel');
+        const notesInput = document.getElementById('analyst-notes-input');
+
+        toggleBtn.onclick = () => {
+            toolboxPanel.classList.toggle('active');
+        };
+
+        function toggleToolbox() {
+            toolboxPanel.classList.remove('active');
+        }
+
+        notesInput.oninput = (e) => {
+            gameState.notes = e.target.value;
+            saveState();
+        };
+
+        function updateToolboxUI() {
+            document.getElementById('stat-read-count').innerText = gameState.readEvidenceIds.length;
+            document.getElementById('stat-total-evidence').innerText = case001Definition.boards[8].evidenceList.length;
+            document.getElementById('stat-bookmark-count').innerText = gameState.bookmarkedEvidenceIds.length;
+            if (notesInput.value !== gameState.notes) {
+                notesInput.value = gameState.notes || '';
+            }
+        }
+
+        // Boot Engine on Load
+        window.addEventListener('DOMContentLoaded', initEngine);
+    </script>
+</body>
+</html>

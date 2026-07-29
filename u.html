@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<title>Intel Bureau</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html,
+body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#000;
+    touch-action:none;
+}
+
+body{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+#game{
+
+    width:min(100vw,177.777vh);
+    height:min(56.25vw,100vh);
+
+    position:relative;
+
+    background:url("assets/menu-bg.png") center center no-repeat;
+    background-size:cover;
+    overflow:hidden;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="game"></div>
+
+<script>
+
+function resizeGame(){
+
+    const game=document.getElementById("game");
+
+    const screenRatio=window.innerWidth/window.innerHeight;
+    const targetRatio=16/9;
+
+    if(screenRatio>targetRatio){
+
+        game.style.height="100vh";
+        game.style.width="177.777vh";
+
+    }else{
+
+        game.style.width="100vw";
+        game.style.height="56.25vw";
+
+    }
+
+}
+
+window.addEventListener("resize",resizeGame);
+window.addEventListener("load",resizeGame);
+
+</script>
+
+</body>
+</html>

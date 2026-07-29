@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Intel Bureau - Intelligence Analysis Engine & Case 001</title>
+    <style>
+        :root {
+            --bg-deep: #050811;
+            --bg-panel: rgba(10, 16, 28, 0.75);
+            --bg-glass: rgba(16, 24, 40, 0.6);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(59, 130, 246, 0.3);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-blue-hover: #2563eb;
+            --accent-success: #10b981;
+            --accent-danger: #ef4444;
+            --accent-warning: #f59e0b;
+            --font-stack: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            --transition-speed: 250ms;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: var(--font-stack);
+            font-size: 14px;
+        }
+
+        #landscape-wrapper {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transform-origin: center center;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* App Container Grid Layout */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 16px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Top Header */
+        header.app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-glass);
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .header-title-group h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--text-main);
+            text-transform: uppercase;
+        }
+
+        .header-title-group p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+        }
+
+        .header-nav-tools {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .tool-btn {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all var(--transition-speed) ease;
+            backdrop-filter: blur(12px);
+        }
+
+        .tool-btn:hover {
+            border-color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Middle Investigation Board */
+        .board-viewport {
+            flex: 1;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 12px;
+            animation: fadeIn var(--transition-speed) ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .board-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Custom Scrollbar for inner content */
+        .board-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .board-content::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        .board-content::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.15);
+            border-radius: 3px;
+        }
+
+        /* Bottom Controls */
+        footer.app-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            padding-top: 4px;
+        }
+
+        .nav-btn {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .nav-btn.primary {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .nav-btn.primary:hover:not(:disabled) {
+            background: var(--accent-blue-hover);
+        }
+
+        /* UI Components & Typography inside Boards */
+        h2.board-heading {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 4px;
+            letter-spacing: 0.02em;
+        }
+
+        p.board-subtext {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .glass-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            padding: 14px;
+            backdrop-filter: blur(8px);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Timeline Component */
+        .timeline-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid var(--accent-blue);
+            border-radius: 0 6px 6px 0;
+        }
+
+        .timeline-time {
+            font-family: monospace;
+            font-weight: 700;
+            color: var(--accent-blue);
+            font-size: 1rem;
+            min-width: 60px;
+        }
+
+        /* Evidence Grid & Cards */
+        .evidence-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .evidence-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            position: relative;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .evidence-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .evidence-card.bookmarked {
+            border-color: var(--accent-blue);
+            box-shadow: inset 0 0 0 1px var(--accent-blue);
+        }
+
+        .unread-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-blue);
+        }
+
+        /* Question / Multiple Choice Options */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .option-btn {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            padding: 12px 16px;
+            text-align: left;
+            border-radius: 8px;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            font-size: 0.95rem;
+        }
+
+        .option-btn:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--accent-blue);
+        }
+
+        .option-btn.selected {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+        }
+
+        .option-btn.correct {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--accent-success);
+        }
+
+        .option-btn.incorrect {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--accent-danger);
+        }
+
+        /* Validation Feedback Banner */
+        .validation-banner {
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: none;
+            margin-top: 8px;
+        }
+
+        .validation-banner.success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--accent-success);
+            color: #34d399;
+            display: block;
+        }
+
+        .validation-banner.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--accent-danger);
+            color: #f87171;
+            display: block;
+        }
+
+        /* Drag and Drop Matching Area */
+        .drag-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .drag-source-pool, .drop-targets-pool {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .draggable-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            padding: 10px;
+            border-radius: 6px;
+            cursor: grab;
+            font-size: 0.85rem;
+            transition: background var(--transition-speed);
+        }
+
+        .draggable-item:active {
+            cursor: grabbing;
+        }
+
+        .drop-target-slot {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px dashed var(--border-glass);
+            padding: 12px;
+            border-radius: 6px;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .drop-target-slot.drag-over {
+            border-color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .drop-target-slot.matched {
+            border-color: var(--accent-success);
+            background: rgba(16, 185, 129, 0.05);
+            color: var(--text-main);
+        }
+
+        /* Modal Overlays (Evidence Viewer, Settings, etc.) */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(2, 6, 23, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition-speed) ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            transform: scale(0.95);
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .modal-overlay.active .modal-box {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-glass);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .modal-footer {
+            padding: 14px 20px;
+            border-top: 1px solid var(--border-glass);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .close-modal-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color var(--transition-speed);
+        }
+
+        .close-modal-btn:hover {
+            color: var(--text-main);
+        }
+
+        /* Form Controls inside Reports */
+        .report-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .report-form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .report-select {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-glass);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color var(--transition-speed);
+        }
+
+        .report-select:focus {
+            border-color: var(--accent-blue);
+        }
+
+        /* Toolbox Panel Sidebar */
+        .toolbox-panel {
+            position: absolute;
+            top: 0;
+            right: -320px;
+            width: 300px;
+            height: 100%;
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border-glass);
+            backdrop-filter: blur(16px);
+            z-index: 50;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 16px;
+        }
+
+        .toolbox-panel.open {
+            right: 0;
+        }
+
+        /* Utility Helpers */
+        .text-accent { color: var(--accent-blue); }
+        .font-mono { font-family: monospace; }
+        
+        @media(max-width: 600px) {
+            .app-container { padding: 8px; }
+            .board-content { padding: 12px; }
+            .drag-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="landscape-wrapper">
+        <div class="app-container">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-title-group">
+                    <h1 id="mission-title-header">Intel Bureau</h1>
+                    <p id="board-counter-header">Initializing Engine...</p>
+                </div>
+                <div class="header-nav-tools">
+                    <button class="tool-btn" onclick="toggleToolbox()">Toolbox</button>
+                    <button class="tool-btn" onclick="openSettingsModal()">Settings</button>
+                </div>
+            </header>
+
+            <!-- Main Investigation Board -->
+            <main class="board-viewport">
+                <div id="board-content-area" class="board-content">
+                    <!-- Dynamic Board Content Injected Here -->
+                </div>
+            </main>
+
+            <!-- Footer Navigation -->
+            <footer class="app-footer">
+                <button id="prev-btn" class="nav-btn" onclick="previousBoard()" disabled>Previous</button>
+                <button id="next-btn" class="nav-btn primary" onclick="nextBoard()">Next</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Toolbox Sidebar -->
+    <aside id="toolbox-panel" class="toolbox-panel">
+        <h3>Analyst Toolbox</h3>
+        <p style="font-size:0.8rem; color:var(--text-muted);">Active Investigation Reference</p>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+            <div class="glass-card" style="padding:10px;">
+                <span style="font-size:0.8rem; color:var(--text-muted);">Bookmarks Active</span>
+                <div id="toolbox-bookmarks-count" style="font-weight:700; font-size:1.1rem;">0</div>
+            </div>
+            <div class="glass-card" style="padding:10px;">
+                <span style="font-size:0.8rem; color:var(--text-muted);">Evidence Read</span>
+                <div id="toolbox-read-count" style="font-weight:700; font-size:1.1rem;">0 / 6</div>
+            </div>
+        </div>
+        <div style="margin-top:auto;">
+            <button class="tool-btn" style="width:100%;" onclick="toggleToolbox()">Close Toolbox</button>
+        </div>
+    </aside>
+
+    <!-- Evidence Viewer Modal -->
+    <div id="evidence-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modal-evidence-title">Evidence Viewer</h3>
+                <button class="close-modal-btn" onclick="closeEvidenceModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-evidence-body">
+                <!-- Evidence Detail Dynamically Loaded -->
+            </div>
+            <div class="modal-footer">
+                <button class="tool-btn" id="modal-bookmark-btn" onclick="toggleActiveEvidenceBookmark()">Bookmark</button>
+                <button class="tool-btn primary" onclick="closeEvidenceModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>System Settings</h3>
+                <button class="close-modal-btn" onclick="closeSettingsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="glass-card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>Audio Interface Cues</span>
+                    <input type="checkbox" id="setting-audio" checked>
+                </div>
+                <div class="glass-card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>System Telemetry Saving</span>
+                    <input type="checkbox" id="setting-save" checked>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="tool-btn primary" onclick="closeSettingsModal()">Save & Return</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ====================================================
+           INTEL BUREAU - CORE ENGINE & CASE 001 INTEGRATED SCRIPT
+           ==================================================== */
+
+        // Global State Architecture
+        const state = {
+            currentBoardIndex: 0,
+            caseId: "CASE 001",
+            caseTitle: "The Missing Museum Artifact",
+            bookmarks: [],
+            readEvidence: [],
+            boardValidationState: {},
+            matchesState: {},
+            timelineOrderState: [],
+            reportData: { suspect: "", evidence: "", recommendation: "" }
+        };
+
+        // Evidence Database for Case 001
+        const evidenceDatabase = [
+            { id: "e1", cat: "ACCESS", title: "Storage Room Access Card", desc: "Storage Room accessed at 20:11 via Guard Card.", details: "Log verification indicates restricted electronic entry using Guard credential #402." },
+            { id: "e2", cat: "DIGITAL", title: "Museum GPS Telemetry", desc: "Guard coordinates confirmed inside museum perimeter at 20:11.", details: "GPS tracking pins device precisely inside security corridor sector B." },
+            { id: "e3", cat: "DIGITAL", title: "Restaurant GPS Telemetry", desc: "Curator confirmed at external restaurant during incident window.", details: "Cell tower triangulation places Senior Curator 4.2 km away from museum site." },
+            { id: "e4", cat: "ACCESS", title: "Temporary Visitor Pass", desc: "Courier signed out pass prior to 19:30 departure.", details: "Visitor logbook verified by front reception desk personnel." },
+            { id: "e5", cat: "PEOPLE", title: "Witness Statement (Cleaner)", desc: "Guard observed near storage sector at 20:05.", details: "Cleaner noted suspect pacing near secure sector shortly before patrol log." },
+            { id: "e6", cat: "CCTV", title: "CCTV Log (Camera 2)", desc: "Blue jacket individual exits storage room at 20:18.", details: "Footage matches jacket description worn by night security personnel." }
+        ];
+
+        // Complete 12 Boards Data Structure for Case 001
+        const boards = [
+            {
+                id: 1,
+                title: "CLASSIFIED BRIEFING",
+                type: "information",
+                content: `
+                    <h2 class="board-heading">CASE 001: The Missing Museum Artifact</h2>
+                    <p class="board-subtext">Yesterday evening, a priceless diamond disappeared from Riverside Museum. Police investigators collected raw files. The Intelligence Bureau received the case file.</p>
+                    <div class="glass-card" style="margin-top:12px;">
+                        <p><strong>Directive:</strong> You are the Intelligence Analyst. You never investigate physically. You analyze telemetry, logs, and witness statements to determine objective reality.</p>
+                    </div>
+                `
+            },
+            {
+                id: 2,
+                title: "MISSION PARAMETERS",
+                type: "information",
+                content: `
+                    <h2 class="board-heading">Operational Scope</h2>
+                    <div style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+                        <div class="glass-card"><strong>Location:</strong> Riverside Museum, Sector 4</div>
+                        <div class="glass-card"><strong>Primary Objective:</strong> Determine the most logical suspect via corroborated telemetry.</div>
+                        <div class="glass-card"><strong>Secondary Objective:</strong> Support conclusion with verified physical evidence.</div>
+                    </div>
+                `
+            },
+            {
+                id: 3,
+                title: "CHRONOLOGICAL TIMELINE",
+                type: "timeline",
+                content: `
+                    <h2 class="board-heading">Incident Timeline</h2>
+                    <p class="board-subtext">Recorded server timestamps from museum automation systems.</p>
+                    <div class="timeline-list" style="margin-top:12px;">
+                        <div class="timeline-item"><span class="timeline-time">18:00</span>Museum opens to public visitors</div>
+                        <div class="timeline-item"><span class="timeline-time">19:45</span>Delivery truck arrives at loading bay</div>
+                        <div class="timeline-item"><span class="timeline-time">20:05</span>Guard begins scheduled internal inspection</div>
+                        <div class="timeline-item"><span class="timeline-time">20:10</span>Internal security alarm remotely disabled</div>
+                        <div class="timeline-item"><span class="timeline-time">20:11</span>Storage room access triggered</div>
+                        <div class="timeline-item"><span class="timeline-time">20:18</span>Artifact disappearance confirmed</div>
+                        <div class="timeline-item"><span class="timeline-time">20:25</span>Emergency alarm triggered</div>
+                    </div>
+                `
+            },
+            {
+                id: 4,
+                title: "CCTV ANALYSIS",
+                type: "question",
+                questionKey: "q4",
+                correctAnswer: "Camera 2",
+                content: `
+                    <h2 class="board-heading">CCTV Surveillance Log</h2>
+                    <p class="board-subtext">Analyze camera feeds recorded during the active incident window.</p>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+                        <div class="glass-card"><strong>CAMERA 1 (20:14):</strong> Blue jacket enters main hallway.</div>
+                        <div class="glass-card"><strong>CAMERA 2 (20:18):</strong> Blue jacket exits storage room.</div>
+                        <div class="glass-card"><strong>CAMERA 3 (20:23):</strong> White sedan exits parking lot.</div>
+                    </div>
+                    <p style="margin-top:12px; font-weight:600;">Which camera recorded the suspect closest to the disappearance?</p>
+                    <div class="options-list" id="q4-options">
+                        <button class="option-btn" onclick="selectOption('q4', 'Camera 1', this)">Camera 1</button>
+                        <button class="option-btn" onclick="selectOption('q4', 'Camera 2', this)">Camera 2</button>
+                        <button class="option-btn" onclick="selectOption('q4', 'Camera 3', this)">Camera 3</button>
+                    </div>
+                    <div id="q4-feedback" class="validation-banner"></div>
+                `
+            },
+            {
+                id: 5,
+                title: "WITNESS INTERVIEWS",
+                type: "information",
+                content: `
+                    <h2 class="board-heading">Testimonial Records</h2>
+                    <div style="display:flex; flex-direction:column; gap:10px; margin-top:8px;">
+                        <div class="glass-card"><strong>Witness 1 (Museum Cleaner):</strong> "I saw the guard near the storage room around 20:05."</div>
+                        <div class="glass-card"><strong>Witness 2 (Receptionist):</strong> "The delivery driver completed paperwork and left before 19:30."</div>
+                        <div class="glass-card"><strong>Witness 3 (Visitor):</strong> "I heard the security chime before observing any exit movement."</div>
+                    </div>
+                `
+            },
+            {
+                id: 6,
+                title: "ACCESS LOG VERIFICATION",
+                type: "question",
+                questionKey: "q6",
+                correctAnswer: "Guard",
+                content: `
+                    <h2 class="board-heading">Electronic Access Control Registry</h2>
+                    <p class="board-subtext">Keycard swipe telemetry retrieved from magnetic locks.</p>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+                        <div class="glass-card"><strong>Storage Room (20:11):</strong> Guard Card #402</div>
+                        <div class="glass-card"><strong>Storage Room (19:43):</strong> Curator Card #101</div>
+                        <div class="glass-card"><strong>Front Entrance (19:47):</strong> Delivery Driver Temporary Pass</div>
+                    </div>
+                    <p style="margin-top:12px; font-weight:600;">Who was the last authorized person to access the Storage Room?</p>
+                    <div class="options-list" id="q6-options">
+                        <button class="option-btn" onclick="selectOption('q6', 'Curator', this)">Curator</button>
+                        <button class="option-btn" onclick="selectOption('q6', 'Guard', this)">Guard</button>
+                        <button class="option-btn" onclick="selectOption('q6', 'Delivery Driver', this)">Delivery Driver</button>
+                    </div>
+                    <div id="q6-feedback" class="validation-banner"></div>
+                `
+            },
+            {
+                id: 7,
+                title: "GPS TELEMETRY CHECK",
+                type: "question",
+                questionKey: "q7",
+                correctAnswer: "Curator",
+                content: `
+                    <h2 class="board-heading">Suspect Positioning Data</h2>
+                    <p class="board-subtext">Cellular triangulation verified at timestamp 20:11.</p>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+                        <div class="glass-card"><strong>Guard:</strong> Museum Sector B (Inside)</div>
+                        <div class="glass-card"><strong>Delivery Driver:</strong> City Warehouse (North District)</div>
+                        <div class="glass-card"><strong>Curator:</strong> Downtown Bistro Restaurant</div>
+                    </div>
+                    <p style="margin-top:12px; font-weight:600;">Which suspect definitely was NOT at the museum during the breach?</p>
+                    <div class="options-list" id="q7-options">
+                        <button class="option-btn" onclick="selectOption('q7', 'Guard', this)">Guard</button>
+                        <button class="option-btn" onclick="selectOption('q7', 'Delivery Driver', this)">Delivery Driver</button>
+                        <button class="option-btn" onclick="selectOption('q7', 'Curator', this)">Curator</button>
+                    </div>
+                    <div id="q7-feedback" class="validation-banner"></div>
+                `
+            },
+            {
+                id: 8,
+                title: "SUSPECT PROFILES & EVIDENCE REPOSITORY",
+                type: "evidence_hub",
+                content: `
+                    <h2 class="board-heading">Evidence Repository & Dossiers</h2>
+                    <p class="board-subtext">Click any evidence card to examine logs, or review active profiles.</p>
+                    <div class="evidence-grid" style="margin-top:12px;" id="evidence-grid-container">
+                        <!-- Evidence cards rendered dynamically -->
+                    </div>
+                `
+            },
+            {
+                id: 9,
+                title: "EVIDENCE CROSS-MATCHING",
+                type: "matching",
+                content: `
+                    <h2 class="board-heading">Evidence Matrix Matching</h2>
+                    <p class="board-subtext">Correlate evidence items to their verified targets.</p>
+                    <div class="drag-container">
+                        <div class="drag-source-pool">
+                            <div class="draggable-item" draggable="true" ondragstart="onDragStart(event)" data-match="Guard">Storage Room Access Card</div>
+                            <div class="draggable-item" draggable="true" ondragstart="onDragStart(event)" data-match="Curator">Restaurant GPS Telemetry</div>
+                            <div class="draggable-item" draggable="true" ondragstart="onDragStart(event)" data-match="Delivery Driver">Temporary Visitor Pass</div>
+                        </div>
+                        <div class="drop-targets-pool">
+                            <div class="drop-target-slot" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event, 'Guard')" data-target="Guard">Target: Guard Log</div>
+                            <div class="drop-target-slot" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event, 'Curator')" data-target="Curator">Target: Curator Log</div>
+                            <div class="drop-target-slot" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event, 'Delivery Driver')" data-target="Delivery Driver">Target: Delivery Pass</div>
+                        </div>
+                    </div>
+                    <div id="matching-feedback" class="validation-banner"></div>
+                `
+            },
+            {
+                id: 10,
+                title: "TIMELINE RECONSTRUCTION",
+                type: "timeline_recon",
+                content: `
+                    <h2 class="board-heading">Chronological Alignment</h2>
+                    <p class="board-subtext">Order the incident events accurately to proceed.</p>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;" id="recon-list">
+                        <div class="glass-card" draggable="true" ondragstart="onReconDrag(event)" data-index="2">Artifact Disappears (20:18)</div>
+                        <div class="glass-card" draggable="true" ondragstart="onReconDrag(event)" data-index="0">Museum Opens (18:00)</div>
+                        <div class="glass-card" draggable="true" ondragstart="onReconDrag(event)" data-index="1">Guard Accesses Storage (20:11)</div>
+                    </div>
+                    <button class="tool-btn primary" style="margin-top:12px;" onclick="validateRecon()">Verify Timeline Sequence</button>
+                    <div id="recon-feedback" class="validation-banner"></div>
+                `
+            },
+            {
+                id: 11,
+                title: "HYPOTHESIS BUILDER",
+                type: "hypothesis",
+                content: `
+                    <h2 class="board-heading">Analytical Hypothesis Synthesis</h2>
+                    <p class="board-subtext">Select analytical conclusions derived from cross-referenced data.</p>
+                    <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+                        <div class="report-form-group">
+                            <label>Primary Suspect Assessment</label>
+                            <select id="hyp-suspect" class="report-select">
+                                <option value="">-- Select Suspect --</option>
+                                <option value="Guard">Guard</option>
+                                <option value="Curator">Curator</option>
+                                <option value="Delivery Driver">Delivery Driver</option>
+                            </select>
+                        </div>
+                        <div class="report-form-group">
+                            <label>Primary Motive Indicator</label>
+                            <select id="hyp-motive" class="report-select">
+                                <option value="">-- Select Motive --</option>
+                                <option value="Financial Motive">Financial Motive</option>
+                                <option value="Accidental Damage">Accidental Damage</option>
+                                <option value="Personal Revenge">Personal Revenge</option>
+                            </select>
+                        </div>
+                        <div class="report-form-group">
+                            <label>Decisive Evidence Supporting Conclusion</label>
+                            <select id="hyp-evidence" class="report-select">
+                                <option value="">-- Select Evidence --</option>
+                                <option value="Storage Access">Storage Access Log</option>
+                                <option value="GPS">GPS Telemetry</option>
+                                <option value="Witness">Witness Statement</option>
+                            </select>
+                        </div>
+                        <button class="tool-btn primary" onclick="validateHypothesis()">Evaluate Hypothesis</button>
+                        <div id="hyp-feedback" class="validation-banner"></div>
+                    </div>
+                `
+            },
+            {
+                id: 12,
+                title: "FINAL INTELLIGENCE REPORT",
+                type: "report",
+                content: `
+                    <h2 class="board-heading">Official Intelligence Bureau Assessment</h2>
+                    <p class="board-subtext">Complete final reporting metrics for case archive submission.</p>
+                    <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+                        <div class="report-form-group">
+                            <label>Sentence 1: Based on available evidence...</label>
+                            <select id="rep-1" class="report-select">
+                                <option value="">-- Select Assessment --</option>
+                                <option value="The Guard">The Guard</option>
+                                <option value="The Curator">The Curator</option>
+                                <option value="The Delivery Driver">The Delivery Driver</option>
+                            </select>
+                        </div>
+                        <div class="report-form-group">
+                            <label>Sentence 2: The strongest supporting evidence was...</label>
+                            <select id="rep-2" class="report-select">
+                                <option value="">-- Select Supporting Clue --</option>
+                                <option value="Storage Access">Storage Access</option>
+                                <option value="GPS">GPS Telemetry</option>
+                                <option value="Witness">Witness Statement</option>
+                            </select>
+                        </div>
+                        <div class="report-form-group">
+                            <label>Sentence 3: Bureau operational recommendation...</label>
+                            <select id="rep-3" class="report-select">
+                                <option value="">-- Select Recommendation --</option>
+                                <option value="Further Investigation Required">Further Investigation Required</option>
+                                <option value="Immediate Arrest">Immediate Arrest</option>
+                                <option value="Close Case">Close Case</option>
+                            </select>
+                        </div>
+                        <button class="tool-btn primary" style="margin-top:8px;" onclick="submitFinalReport()">SUBMIT INTELLIGENCE REPORT</button>
+                        <div id="report-feedback" class="validation-banner"></div>
+                    </div>
+                `
+            }
+        ];
+
+        // Engine Initialization & Render Lifecycle
+        function initEngine() {
+            loadBoard(state.currentBoardIndex);
+            updateToolboxUI();
+        }
+
+        function loadBoard(index) {
+            if (index < 0 || index >= boards.length) return;
+            state.currentBoardIndex = index;
+            const board = boards[index];
+
+            document.getElementById("mission-title-header").innerText = state.caseId;
+            document.getElementById("board-counter-header").innerText = `Board ${index + 1} / ${boards.length} — ${board.title}`;
+
+            const contentArea = document.getElementById("board-content-area");
+            contentArea.innerHTML = board.content;
+
+            // Post-render hooks for interactive board types
+            if (board.type === "evidence_hub") {
+                renderEvidenceGrid();
+            }
+
+            updateNavigationButtons();
+        }
+
+        function nextBoard() {
+            const board = boards[state.currentBoardIndex];
+            // Enforce validation if board requires it
+            if (board.type === "question" && !state.boardValidationState[board.questionKey]) {
+                return;
+            }
+            if (board.type === "matching" && !state.boardValidationState["matching"]) {
+                return;
+            }
+            if (board.type === "timeline_recon" && !state.boardValidationState["recon"]) {
+                return;
+            }
+            if (board.type === "hypothesis" && !state.boardValidationState["hypothesis"]) {
+                return;
+            }
+            if (board.type === "report" && !state.boardValidationState["report"]) {
+                return;
+            }
+
+            if (state.currentBoardIndex < boards.length - 1) {
+                loadBoard(state.currentBoardIndex + 1);
+            } else {
+                triggerCaseComplete();
+            }
+        }
+
+        function previousBoard() {
+            if (state.currentBoardIndex > 0) {
+                loadBoard(state.currentBoardIndex - 1);
+            }
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById("prev-btn");
+            const nextBtn = document.getElementById("next-btn");
+
+            prevBtn.disabled = state.currentBoardIndex === 0;
+
+            const board = boards[state.currentBoardIndex];
+            let isLocked = false;
+
+            if (board.type === "question" && !state.boardValidationState[board.questionKey]) isLocked = true;
+            if (board.type === "matching" && !state.boardValidationState["matching"]) isLocked = true;
+            if (board.type === "timeline_recon" && !state.boardValidationState["recon"]) isLocked = true;
+            if (board.type === "hypothesis" && !state.boardValidationState["hypothesis"]) isLocked = true;
+            if (board.type === "report" && !state.boardValidationState["report"]) isLocked = true;
+
+            nextBtn.disabled = isLocked;
+
+            if (state.currentBoardIndex === boards.length - 1) {
+                nextBtn.innerText = "CASE COMPLETE";
+            } else {
+                nextBtn.innerText = "Next";
+            }
+        }
+
+        // Question Option Selection & Validation
+        function selectOption(questionKey, selectedValue, btnElement) {
+            const board = boards.find(b => b.questionKey === questionKey);
+            const container = document.getElementById(`${questionKey}-options`);
+            const feedback = document.getElementById(`${questionKey}-feedback`);
+
+            Array.from(container.children).forEach(child => {
+                child.classList.remove('selected', 'correct', 'incorrect');
+            });
+
+            if (selectedValue === board.correctAnswer) {
+                btnElement.classList.add('correct');
+                feedback.className = "validation-banner success";
+                feedback.innerText = "Analysis Accepted. Unlock NEXT.";
+                state.boardValidationState[questionKey] = true;
+            } else {
+                btnElement.classList.add('incorrect');
+                feedback.className = "validation-banner error";
+                feedback.innerText = "Incorrect Analysis. Review the available evidence.";
+                state.boardValidationState[questionKey] = false;
+            }
+            updateNavigationButtons();
+        }
+
+        // Evidence Hub & Viewer
+        function renderEvidenceGrid() {
+            const grid = document.getElementById("evidence-grid-container");
+            if (!grid) return;
+            grid.innerHTML = "";
+
+            evidenceDatabase.forEach(item => {
+                const isBookmarked = state.bookmarks.includes(item.id);
+                const isRead = state.readEvidence.includes(item.id);
+
+                const card = document.createElement("div");
+                card.className = `evidence-card ${isBookmarked ? 'bookmarked' : ''}`;
+                card.onclick = () => openEvidenceModal(item.id);
+                card.innerHTML = `
+                    ${!isRead ? '<div class="unread-indicator"></div>' : ''}
+                    <span style="font-size:0.75rem; color:var(--accent-blue); font-weight:600;">${item.cat}</span>
+                    <h4 style="font-size:0.95rem; margin:4px 0;">${item.title}</h4>
+                    <p style="font-size:0.8rem; color:var(--text-muted);">${item.desc}</p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        let activeEvidenceId = null;
+        function openEvidenceModal(id) {
+            activeEvidenceId = id;
+            const item = evidenceDatabase.find(e => e.id === id);
+            if (!item) return;
+
+            if (!state.readEvidence.includes(id)) {
+                state.readEvidence.push(id);
+                updateToolboxUI();
+                renderEvidenceGrid();
+            }
+
+            document.getElementById("modal-evidence-title").innerText = item.title;
+            document.getElementById("modal-evidence-body").innerHTML = `
+                <span class="text-accent" style="font-weight:600;">Category: ${item.cat}</span>
+                <p style="font-size:0.95rem; line-height:1.5;">${item.details}</p>
+                <div class="glass-card" style="margin-top:8px;">
+                    <strong style="font-size:0.85rem;">Intelligence Summary:</strong>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">${item.desc}</p>
+                </div>
+            `;
+
+            const bookmarkBtn = document.getElementById("modal-bookmark-btn");
+            bookmarkBtn.innerText = state.bookmarks.includes(id) ? "Remove Bookmark" : "Bookmark Evidence";
+
+            document.getElementById("evidence-modal").classList.add("active");
+        }
+
+        function closeEvidenceModal() {
+            document.getElementById("evidence-modal").classList.remove("active");
+        }
+
+        function toggleActiveEvidenceBookmark() {
+            if (!activeEvidenceId) return;
+            const index = state.bookmarks.indexOf(activeEvidenceId);
+            if (index > -1) {
+                state.bookmarks.splice(index, 1);
+            } else {
+                state.bookmarks.push(activeEvidenceId);
+            }
+            openEvidenceModal(activeEvidenceId);
+            updateToolboxUI();
+            renderEvidenceGrid();
+        }
+
+        // Drag and Drop Matching Mechanics
+        let draggedMatchItem = null;
+        function onDragStart(e) {
+            draggedMatchItem = e.target.getAttribute("data-match");
+        }
+        function onDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add("drag-over");
+        }
+        function onDragLeave(e) {
+            e.currentTarget.classList.remove("drag-over");
+        }
+        function onDrop(e, targetKey) {
+            e.preventDefault();
+            e.currentTarget.classList.remove("drag-over");
+            if (draggedMatchItem === targetKey) {
+                e.currentTarget.classList.add("matched");
+                e.currentTarget.innerText = `Verified: ${draggedMatchItem}`;
+                state.matchesState[targetKey] = true;
+
+                if (Object.keys(state.matchesState).length === 3) {
+                    const fb = document.getElementById("matching-feedback");
+                    fb.className = "validation-banner success";
+                    fb.innerText = "Analysis Accepted. All matches verified.";
+                    state.boardValidationState["matching"] = true;
+                    updateNavigationButtons();
+                }
+            }
+        }
+
+        // Timeline Reconstruction
+        let draggedReconElement = null;
+        function onReconDrag(e) {
+            draggedReconElement = e.target;
+        }
+        function validateRecon() {
+            const list = document.getElementById("recon-list");
+            const children = Array.from(list.children);
+            let isCorrect = true;
+
+            // Correct order indices: 0, 1, 2
+            const expected = ["0", "1", "2"];
+            children.forEach((child, idx) => {
+                if (child.getAttribute("data-index") !== expected[idx]) {
+                    isCorrect = false;
+                }
+            });
+
+            const feedback = document.getElementById("recon-feedback");
+            if (isCorrect) {
+                feedback.className = "validation-banner success";
+                feedback.innerText = "Timeline Verified. Sequence accepted.";
+                state.boardValidationState["recon"] = true;
+                updateNavigationButtons();
+            } else {
+                feedback.className = "validation-banner error";
+                feedback.innerText = "Incorrect Chronology. Review logs.";
+                state.boardValidationState["recon"] = false;
+                updateNavigationButtons();
+            }
+        }
+
+        // Hypothesis Builder Validation
+        function validateHypothesis() {
+            const suspect = document.getElementById("hyp-suspect").value;
+            const motive = document.getElementById("hyp-motive").value;
+            const evidence = document.getElementById("hyp-evidence").value;
+            const feedback = document.getElementById("hyp-feedback");
+
+            if (suspect === "Guard" && motive === "Financial Motive" && evidence === "Storage Access") {
+                feedback.className = "validation-banner success";
+                feedback.innerText = "Analysis Accepted. Hypothesis corroborated.";
+                state.boardValidationState["hypothesis"] = true;
+                updateNavigationButtons();
+            } else {
+                feedback.className = "validation-banner error";
+                feedback.innerText = "The evidence does not fully support this conclusion.";
+                state.boardValidationState["hypothesis"] = false;
+                updateNavigationButtons();
+            }
+        }
+
+        // Final Intelligence Report Submission
+        function submitFinalReport() {
+            const rep1 = document.getElementById("rep-1").value;
+            const rep2 = document.getElementById("rep-2").value;
+            const rep3 = document.getElementById("rep-3").value;
+            const feedback = document.getElementById("report-feedback");
+
+            if (rep1 === "The Guard" && rep2 === "Storage Access" && rep3 === "Further Investigation Required") {
+                feedback.className = "validation-banner success";
+                feedback.innerText = "REPORT ACCEPTED. Intelligence package compiled.";
+                state.boardValidationState["report"] = true;
+                updateNavigationButtons();
+            } else {
+                feedback.className = "validation-banner error";
+                feedback.innerText = "REPORT REQUIRES REVISION. Logic mismatch detected.";
+                state.boardValidationState["report"] = false;
+                updateNavigationButtons();
+            }
+        }
+
+        function triggerCaseComplete() {
+            const contentArea = document.getElementById("board-content-area");
+            contentArea.innerHTML = `
+                <h2 class="board-heading">CASE 001 ACCOMPLISHED</h2>
+                <p class="board-subtext">Final Intelligence Review & Debrief</p>
+                <div class="glass-card" style="margin-top:8px;">
+                    <strong>Case Summary:</strong>
+                    <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">
+                        • The Guard was confirmed inside restricted storage.<br>
+                        • CCTV corroborates movement timelines.<br>
+                        • Curator and Courier alibis fully verified.<br>
+                        • Direct physical prosecution requires further field coordination.
+                    </p>
+                </div>
+                <button class="tool-btn primary" style="margin-top:16px;" onclick="returnToOfficeDashboard()">RETURN TO OFFICE</button>
+            `;
+            document.getElementById("prev-btn").style.display = "none";
+            document.getElementById("next-btn").style.display = "none";
+        }
+
+        function returnToOfficeDashboard() {
+            alert("Case archived successfully. Returning to Intelligence Bureau Dashboard.");
+            window.location.reload();
+        }
+
+        // Toolbox & Settings Modals
+        function toggleToolbox() {
+            document.getElementById("toolbox-panel").classList.toggle("open");
+        }
+
+        function updateToolboxUI() {
+            document.getElementById("toolbox-bookmarks-count").innerText = state.bookmarks.length;
+            document.getElementById("toolbox-read-count").innerText = `${state.readEvidence.length} / ${evidenceDatabase.length}`;
+        }
+
+        function openSettingsModal() {
+            document.getElementById("settings-modal").classList.add("active");
+        }
+
+        function closeSettingsModal() {
+            document.getElementById("settings-modal").classList.remove("active");
+        }
+
+        // Auto initialization on load
+        window.addEventListener("load", initEngine);
+        window.addEventListener("resize", () => {});
+    </script>
+</body>
+</html>
